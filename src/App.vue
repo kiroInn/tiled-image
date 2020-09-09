@@ -6,26 +6,27 @@
       name="upload image"
     />
     {{map.width}}{{map.height}}
-    <div class="map">
-      <img ref="bg" :src="map.src" />
-      <div class="grid">
-        <i v-for="i in grid" :key="i"></i>
-      </div>
+    <div ref="map" class="map">
+      <i v-bind:class="{ checked: item.checked }" v-on:click="handleTileClick(item)" v-for="item in grid" :key="item.key"></i>
     </div>
   </div>
 </template>
 <script>
+      // <img ref="bg" :src="map.src" />
 import _ from "lodash";
 export default {
   data() {
     return {
       map: {
         src: "",
-        width: "",
-        height: "",
+        width: "512",
+        height: "512",
       },
       grid: [],
     };
+  },
+  created() {
+    this.grid = _.range(0, 176).map(index => ({key:index, checked: false}));
   },
   methods: {
     filesChange(name, files) {
@@ -35,11 +36,14 @@ export default {
         setTimeout(() => {
           this.map.width = this.$refs.bg.width;
           this.map.height = this.$refs.bg.height;
-          this.grid = _.range(0, 176);
+          this.grid = _.range(0, 176).map(index => ({key:index, checked: false}));
         }, 1);
       };
       reader.readAsDataURL(files[0]); // convert to base64 string
     },
+    handleTileClick(item){
+      item.checked = !item.checked;
+    }
   },
 };
 </script>
@@ -47,16 +51,21 @@ export default {
 @import "reset.less";
 
 .map {
-  position: relative;
-  .grid {
-    position: absolute;
+  background-image: url('./bg.png');
+  background-size: contain;
+  width: 512px;
+  height: 512px;
+  display: flex;
+  flex-wrap: wrap;
     i {
       box-sizing: border-box;
-      width: 48px;
+      width: 46.5px;
       height: 32px;
       display: inline-block;
       border: 1px solid gray;
+      &.checked{
+        background-color: red;
+      }
     }
-  }
 }
 </style>
