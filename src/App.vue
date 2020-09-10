@@ -2,21 +2,27 @@
   <div class="container" v-on:click.ctrl="changeType">
     <aside>
       <div class="file">
-        <label for>image:</label>
-        <input @change="filesChange($event.target.name, $event.target.files)" type="file" />
+        <label for="upload-photo">Chose Image</label>
+        <input
+          id="upload-photo"
+          @change="filesChange($event.target.name, $event.target.files)"
+          type="file"
+        />
       </div>
       <div>
-        <label for>dimension:</label>
+        <label for>dimension</label>
         {{map.width}} * {{map.height}}
       </div>
       <div class="type">
-        <label for>type:</label>
+        <label for>type</label>
         <div :class="currentType">{{currentType}}</div>
       </div>
       <div>
-        <label for>zoom:</label>
-        <button @click="handleZoomIn">+</button>
-        <button @click="handleZoomOut">-</button>
+        <label for>zoom</label>
+        <div>
+          <button @click="handleZoomIn">+</button>
+          <button @click="handleZoomOut">-</button>
+        </div>
       </div>
       <div class="types">
         <div class="NORMAL">NORMAL</div>
@@ -24,15 +30,22 @@
         <div class="SHADOW">SHADOW</div>
         <div class="NONE">NONE</div>
       </div>
+      <div>
+        <a @click="getResult" href="javascript:void(0);">print</a>
+      </div>
     </aside>
-    <div ref="map" class="map">
-      <i
-        v-bind:class="item.type"
-        @mouseover="handleTileOver(item)"
-        @click="handleTileClick(item)"
-        v-for="item in grid"
-        :key="item.key"
-      ></i>
+    <div class="map-container">
+    <v-zoomer style="width: 512px; height: 512px; border: solid 1px silver;" minScale="0.1">
+      <div ref="map" class="map">
+        <i
+          v-bind:class="item.type"
+          @mouseover="handleTileOver(item)"
+          @click="handleTileClick(item)"
+          v-for="item in grid"
+          :key="item.key"
+        >{{item.key}}</i>
+      </div>
+      </v-zoomer>
     </div>
   </div>
 </template>
@@ -88,6 +101,9 @@ export default {
         this.type = TYPE.NORMAL;
       }
     },
+    getResult(){
+      console.log(_.map(this.grid, item => TYPE[item.type]))
+    },
     async filesChange(name, files) {
       const _URL = window.URL || window.webkitURL;
       const reader = new FileReader();
@@ -135,49 +151,67 @@ export default {
   },
 };
 </script>
-<style lang="less" scoped>
+<style scoped lang="less" >
 .container {
   aside {
+    background: #eee;
     position: absolute;
     left: 0;
     width: 250px;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     font-size: 16px;
-    padding: 24px 0 12px 24px;
+    padding: 24px 0 24px 24px;
     > div {
       display: flex;
       flex-wrap: wrap;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
       margin-bottom: 24px;
       input {
         width: 120px;
       }
       &.file {
+        label {
+          border: 1px solid #000;
+          border-radius: 5px;
+          color: #000;
+          background-color: pink;
+          padding: 2px 4px;
+        }
       }
     }
     .type,
     .types {
       > div {
         padding: 4px;
-        margin-right: 4px;
+        margin-bottom: 2px;
       }
     }
   }
-  .map {
-    margin-left: 250px;
-    background-image: url("./bg.png");
-    background-size: contain;
-    width: 512px;
-    height: 512px;
+  .map-container {
     display: flex;
-    flex-wrap: wrap;
-    i {
-      box-sizing: border-box;
-      width: 46.5px;
-      height: 32px;
-      display: inline-block;
-      border: 1px solid gray;
+    align-items: center;
+    height: 100vh;
+    justify-content: center;
+    .map {
+      background-image: url("./bg.png");
+      background-size: contain;
+      width: 512px;
+      height: 512px;
+      display: flex;
+      flex-wrap: wrap-reverse;
+      i {
+        box-sizing: border-box;
+        width: 46.5px;
+        height: 32px;
+        display: inline-block;
+        border: 1px solid gray;
+        font-size: 10px;
+        color: #fff;
+      }
     }
   }
   .NORMAL {
