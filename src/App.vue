@@ -1,7 +1,7 @@
 <template>
   <div class="container" v-on:click.ctrl="changeType">
     <aside>
-      <div class="file">
+      <div v-if="unfold" class="file">
         <label for="upload-photo">Chose Image</label>
         <input
           id="upload-photo"
@@ -9,43 +9,47 @@
           type="file"
         />
       </div>
-      <div>
+      <div v-if="unfold">
         <label for>dimension</label>
         {{map.width}} * {{map.height}}
       </div>
-      <div class="type">
+      <div v-if="unfold" class="type">
         <label for>type</label>
         <div :class="currentType">{{currentType}}</div>
       </div>
-      <div>
+      <div v-if="unfold">
         <label for>zoom</label>
         <div>
           <button @click="handleZoomIn">+</button>
           <button @click="handleZoomOut">-</button>
+          <button @click="handleReset">reset</button>
         </div>
       </div>
-      <div class="types">
+      <div v-if="unfold" class="types">
         <div class="NORMAL">NORMAL</div>
         <div class="BARRIER">BARRIER</div>
         <div class="SHADOW">SHADOW</div>
         <div class="NONE">NONE</div>
       </div>
-      <div>
+      <div v-if="unfold">
         <a @click="getResult" href="javascript:void(0);">print</a>
       </div>
-    </aside>
-    <div class="map-container">
-    <v-zoomer style="width: 512px; height: 512px; border: solid 1px silver;" minScale="0.1">
-      <div ref="map" class="map">
-        <i
-          v-bind:class="item.type"
-          @mouseover="handleTileOver(item)"
-          @click="handleTileClick(item)"
-          v-for="item in grid"
-          :key="item.key"
-        >{{item.key}}</i>
+      <div>
+        <a @click="() => unfold = !unfold" href="javascript:void(0);">{{unfold?'︽︽':'︾︾'}}</a>
       </div>
-      </v-zoomer>
+    </aside>
+    <div class="map-ccc">
+      <div class="map-container">
+        <div ref="map" class="map">
+          <i
+            v-bind:class="item.type"
+            @mouseover="handleTileOver(item)"
+            @click="handleTileClick(item)"
+            v-for="item in grid"
+            :key="item.key"
+          >{{item.key}}</i>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -65,6 +69,7 @@ export default {
   },
   data() {
     return {
+      unfold: true,
       map: {
         width: "512",
         height: "512",
@@ -87,12 +92,15 @@ export default {
   },
   methods: {
     handleZoomIn() {
-      const zoom = this.zoom + 0.5;
-      this.$refs.map.style.transform = `scale(${zoom})`;
+      this.zoom += 0.2;
+      this.$refs.map.style.transform = `scale(${this.zoom})`;
     },
     handleZoomOut() {
-      const zoom = this.zoom - 0.5;
-      this.$refs.map.style.transform = `scale(${zoom})`;
+      this.zoom -= 0.2;
+      this.$refs.map.style.transform = `scale(${this.zoom})`;
+    },
+    handleReset() {
+      this.$refs.map.style.transform = "";
     },
     changeType() {
       if (this.type === TYPE.NORMAL) {
@@ -101,8 +109,8 @@ export default {
         this.type = TYPE.NORMAL;
       }
     },
-    getResult(){
-      console.log(_.map(this.grid, item => TYPE[item.type]))
+    getResult() {
+      console.log(_.map(this.grid, (item) => TYPE[item.type]));
     },
     async filesChange(name, files) {
       const _URL = window.URL || window.webkitURL;
@@ -154,15 +162,16 @@ export default {
 <style scoped lang="less" >
 .container {
   aside {
+    z-index: 1;
     background: #eee;
     position: absolute;
     left: 0;
-    width: 250px;
+    width: 150px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     font-size: 16px;
-    padding: 24px 0 24px 24px;
+    padding: 20px 20px 0;
     > div {
       display: flex;
       flex-wrap: wrap;
@@ -191,29 +200,32 @@ export default {
       }
     }
   }
-  .map-container {
+  .map-ccc {
     display: flex;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     justify-content: center;
-    .map {
-      background-image: url("./bg.png");
-      background-size: contain;
-      width: 512px;
-      height: 512px;
-      display: flex;
-      flex-wrap: wrap-reverse;
-      i {
-        box-sizing: border-box;
-        width: 46.5px;
-        height: 32px;
-        display: inline-block;
-        border: 1px solid gray;
-        font-size: 10px;
-        color: #fff;
+    .map-container {
+      .map {
+        background-image: url("./bg.png");
+        background-size: contain;
+        width: 512px;
+        height: 512px;
+        display: flex;
+        flex-wrap: wrap-reverse;
+        i {
+          box-sizing: border-box;
+          width: 46.5px;
+          height: 32px;
+          display: inline-block;
+          border: 1px solid gray;
+          font-size: 10px;
+          color: #fff;
+        }
       }
     }
   }
+
   .NORMAL {
     background-color: transparent;
     opacity: 0.5;

@@ -20,8 +20,7 @@
     "file-saver": "^2.0.2",
     "lodash": "^4.17.20",
     "vue": "^2.6.12",
-    "vue-hot-reload-api": "^2.3.4",
-    "vue-zoomer": "^0.3.6"
+    "vue-hot-reload-api": "^2.3.4"
   },
   "devDependencies": {
     "@babel/core": "^7.11.6",
