@@ -47,7 +47,7 @@
             @click="handleTileClick(item)"
             v-for="item in grid"
             :key="item.key"
-          >{{item.key}}</i>
+          >{{computedCoord(item.key)}}</i>
         </div>
       </div>
     </div>
@@ -74,15 +74,32 @@ export default {
         width: "512",
         height: "512",
       },
+      tile: {
+        width: 48,
+        height: 32,
+      },
       grid: [],
       type: TYPE.NONE,
       zoom: 1,
+      interactive: false,
     };
   },
   created() {
-    window.addEventListener("keydown", (e) => {
-      if (e.ctrlKey) {
+    window.addEventListener("keydown", ({ code }) => {
+      console.log(code);
+      if (code === "ControlLeft") {
+        this.interactive = true;
+      }
+      if (code === "KeyC") {
         this.type = (this.type + 1) % 4;
+      }
+      if (code === "Escape") {
+        this.unfold = !this.unfold;
+      }
+    });
+    window.addEventListener("keyup", ({ code }) => {
+      if (code === "ControlLeft") {
+        this.interactive = false;
       }
     });
     this.grid = _.range(0, 176).map((index) => ({
@@ -91,6 +108,13 @@ export default {
     }));
   },
   methods: {
+    computedCoord(index) {
+      const ROW_NUM = Math.ceil(this.map.height / this.tile.height);
+      const COL_NUM = Math.ceil(this.map.width / this.tile.width);
+      const row = index % COL_NUM;
+      const col = Math.floor(index / COL_NUM) % ROW_NUM;
+      return `[${row},${col}]`;
+    },
     handleZoomIn() {
       this.zoom += 0.2;
       this.$refs.map.style.transform = `scale(${this.zoom})`;
@@ -117,15 +141,17 @@ export default {
       const reader = new FileReader();
       const { width, height } = await this.getImageSize(files[0]);
       reader.onload = (e) => {
+        const realWidth = Math.ceil(width / 48) * 48;
+        const realHeight = Math.ceil(height / 32) * 32;
         this.$refs.map.style.backgroundImage = `url(${e.target.result})`;
-        this.$refs.map.style.width = `${width}px`;
-        this.$refs.map.style.height = `${height}px`;
-        this.map.width = width;
-        this.map.height = height;
-        console.log("loaded", width, height);
+        this.$refs.map.style.width = `${realWidth}px`;
+        this.$refs.map.style.height = `${realHeight}px`;
+        this.map.width = realWidth;
+        this.map.height = realHeight;
         this.grid = _.range(
           0,
-          Math.round(width / (512 / 11)) * Math.round(height / (512 / 16))
+          Math.ceil(realWidth / this.tile.width) *
+            Math.ceil(realHeight / this.tile.height)
         ).map((index) => ({
           key: index,
           type: _.keys(TYPE)[TYPE.NORMAL],
@@ -152,7 +178,7 @@ export default {
       item.type = _.keys(TYPE)[(TYPE[item.type] + 1) % 4];
     },
     handleTileOver(item) {
-      if (this.type !== TYPE.NONE) {
+      if (this.type !== TYPE.NONE && this.interactive) {
         item.type = _.keys(TYPE)[this.type];
       }
     },
@@ -209,13 +235,13 @@ export default {
       .map {
         background-image: url("./bg.png");
         background-size: contain;
-        width: 512px;
+        width: 528px;
         height: 512px;
         display: flex;
         flex-wrap: wrap-reverse;
         i {
           box-sizing: border-box;
-          width: 46.5px;
+          width: 48px;
           height: 32px;
           display: inline-block;
           border: 1px solid gray;
