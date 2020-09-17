@@ -1,6 +1,9 @@
 <template>
   <div class="container" v-on:click.ctrl="changeType">
     <aside>
+      <div>
+      <div class="droplet"></div>
+      </div>
       <div v-if="unfold" class="file">
         <label for="upload-photo">Chose Image</label>
         <input
@@ -124,6 +127,7 @@ export default {
       this.$refs.map.style.transform = `scale(${this.zoom})`;
     },
     handleReset() {
+      this.zoom = 1;
       this.$refs.map.style.transform = "";
     },
     changeType() {
@@ -233,6 +237,7 @@ export default {
     justify-content: center;
     .map-container {
       .map {
+        transition: all 0.5s;
         background-image: url("./bg.png");
         background-size: contain;
         width: 528px;
