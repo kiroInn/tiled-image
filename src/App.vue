@@ -2,7 +2,7 @@
   <div class="container" v-on:click.ctrl="changeType">
     <aside>
       <div>
-      <div class="droplet"></div>
+        <div class="droplet"></div>
       </div>
       <div v-if="unfold" class="file">
         <label for="upload-photo">Chose Image</label>
@@ -33,6 +33,9 @@
         <div class="BARRIER">BARRIER</div>
         <div class="SHADOW">SHADOW</div>
         <div class="NONE">NONE</div>
+      </div>
+      <div>
+        <input type="text" v-model="gridInput" @change="handleGridChange" />
       </div>
       <div v-if="unfold">
         <a @click="getResult" href="javascript:void(0);">print</a>
@@ -82,6 +85,7 @@ export default {
         height: 32,
       },
       grid: [],
+      gridInput: [],
       type: TYPE.NONE,
       zoom: 1,
       interactive: false,
@@ -89,7 +93,6 @@ export default {
   },
   created() {
     window.addEventListener("keydown", ({ code }) => {
-      console.log(code);
       if (code === "ControlLeft") {
         this.interactive = true;
       }
@@ -130,6 +133,22 @@ export default {
       this.zoom = 1;
       this.$refs.map.style.transform = "";
     },
+    handleGridChange() {
+      try {
+        const data = JSON.parse(this.gridInput);
+        if (_.isArray(data)) {
+          this.grid = _.map(data, (value, index) => ({
+            key: index,
+            type: _.keys(TYPE)[value],
+          }));
+          console.log(111);
+        } else {
+          console.log(222);
+        }
+      } catch (e) {
+        console.error("input err", e);
+      }
+    },
     changeType() {
       if (this.type === TYPE.NORMAL) {
         this.type = TYPE.BARRIER;
@@ -145,17 +164,17 @@ export default {
       const reader = new FileReader();
       const { width, height } = await this.getImageSize(files[0]);
       reader.onload = (e) => {
-        const realWidth = Math.ceil(width / 48) * 48;
-        const realHeight = Math.ceil(height / 32) * 32;
+        const realWidth = Math.floor(width / 48) * 48;
+        const realHeight = Math.floor(height / 32) * 32;
         this.$refs.map.style.backgroundImage = `url(${e.target.result})`;
-        this.$refs.map.style.width = `${realWidth}px`;
-        this.$refs.map.style.height = `${realHeight}px`;
+        this.$refs.map.style.width = `${width}px`;
+        this.$refs.map.style.height = `${height}px`;
         this.map.width = realWidth;
         this.map.height = realHeight;
         this.grid = _.range(
           0,
-          Math.ceil(realWidth / this.tile.width) *
-            Math.ceil(realHeight / this.tile.height)
+          Math.floor(realWidth / this.tile.width) *
+            Math.floor(realHeight / this.tile.height)
         ).map((index) => ({
           key: index,
           type: _.keys(TYPE)[TYPE.NORMAL],
@@ -194,8 +213,9 @@ export default {
   aside {
     z-index: 1;
     background: #eee;
-    position: absolute;
+    position: fixed;
     left: 0;
+    top: 0;
     width: 150px;
     display: flex;
     flex-direction: column;
